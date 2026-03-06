@@ -46,4 +46,44 @@ public class AppConfig {
 
         return new OperationFacade(repo, factory);
     }
+
+    @Bean
+public BankAccountFactory bankAccountFactory() {
+    return new BankAccountFactory();
+
+    }
+
+@Bean
+public CategoryFactory categoryFactory() {
+    return new CategoryFactory();
+}
+
+@Bean
+public OperationFactory operationFactory() {
+    return new OperationFactory();
+}
+
+@Bean
+public BankAccountFacade bankAccountFacade(
+        Repository<BankAccount> repo,
+        BankAccountFactory factory
+) {
+    return new BankAccountFacade(repo, factory);
+}
+
+@Bean
+public CategoryFacade categoryFacade(
+        CategoryFactory factory
+) {
+    return new CategoryFacade(factory);
+}
+
+@Bean
+public OperationFacade operationFacade(
+        OperationService operationService,
+        OperationFactory factory
+) {
+    return new OperationFacade(operationService, factory);
+}
+
 }
