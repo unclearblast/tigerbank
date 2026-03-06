@@ -1,16 +1,16 @@
 package ru.tigrbank.finance.console;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import ru.tigrbank.finance.application.facade.BankAccountFacade;
+import ru.tigrbank.finance.application.facade.CategoryFacade;
+import ru.tigrbank.finance.application.facade.OperationFacade;
 import ru.tigrbank.finance.application.interfaces.AnalyticsService;
 import ru.tigrbank.finance.application.interfaces.DataTransferService;
 import ru.tigrbank.finance.application.interfaces.ImportResult;
-import ru.tigrbank.finance.application.interfaces.OperationService;
 import ru.tigrbank.finance.config.AppConfig;
 import ru.tigrbank.finance.domain.entity.BankAccount;
 import ru.tigrbank.finance.domain.entity.Category;
-import ru.tigrbank.finance.domain.entity.Operation;
 import ru.tigrbank.finance.domain.enums.OperationType;
-import ru.tigrbank.finance.domain.repository.Repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -23,96 +23,108 @@ public class ConsoleApplication {
 
         var context = new AnnotationConfigApplicationContext(AppConfig.class);
 
-        Repository<BankAccount> accountRepo =
-                context.getBean("bankAccountRepository", Repository.class);
+        BankAccountFacade accountFacade =
+                context.getBean(BankAccountFacade.class);
 
-        OperationService operationService =
-                context.getBean(OperationService.class);
+        CategoryFacade categoryFacade =
+                context.getBean(CategoryFacade.class);
+
+        OperationFacade operationFacade =
+                context.getBean(OperationFacade.class);
 
         AnalyticsService analyticsService =
                 context.getBean(AnalyticsService.class);
 
-        // Создание базового счёта и категорий
-        BankAccount account = new BankAccount("Основной счет");
-        accountRepo.save(account);
+        // --- создание счета через фабрику + фасад
 
-        Category salary = new Category("Зарплата", OperationType.INCOME);
-        Category cafe = new Category("Кафе", OperationType.EXPENSE);
+        BankAccount account =
+                accountFacade.createAccount("Основной счет");
 
-        // Добавление операций
-        operationService.add(new Operation(
+        // --- категории
+
+        Category salary =
+                categoryFacade.create("Зарплата", OperationType.INCOME);
+
+        Category cafe =
+                categoryFacade.create("Кафе", OperationType.EXPENSE);
+
+        // --- операции через фасад
+
+        operationFacade.createOperation(
                 OperationType.INCOME,
                 account.getId(),
                 salary.getId(),
-                BigDecimal.valueOf(100_000),
+                BigDecimal.valueOf(100000),
                 LocalDate.now(),
                 "Зарплата"
-        ));
+        );
 
-        operationService.add(new Operation(
+        operationFacade.createOperation(
                 OperationType.EXPENSE,
                 account.getId(),
                 cafe.getId(),
-                BigDecimal.valueOf(2_500),
+                BigDecimal.valueOf(2500),
                 LocalDate.now(),
                 "Кофе"
-        ));
+        );
 
-        System.out.println("Текущий баланс: " + account.getBalance());
+        System.out.println("Баланс счета: " + account.getBalance());
 
         System.out.println("Прибыль за месяц: " +
                 analyticsService.calculateProfit(
                         LocalDate.now().minusMonths(1),
                         LocalDate.now()));
 
-        // --- Выбор формата импорта/экспорта ---
+        // -------------------------
+        // выбор формата
+        // -------------------------
+
         Scanner scanner = new Scanner(System.in);
-        System.out.println("\nВыберите формат для экспорта/импорта:");
+
+        System.out.println("\nВыберите формат:");
+
         System.out.println("1 - JSON");
         System.out.println("2 - CSV");
         System.out.println("3 - YAML");
-        System.out.print("Ваш выбор: ");
+
         int choice = scanner.nextInt();
 
         DataTransferService transferService;
 
         switch (choice) {
-            case 1:
-                transferService = context.getBean("jsonDataTransferService", DataTransferService.class);
-                break;
-            case 2:
-                transferService = context.getBean("csvDataTransferService", DataTransferService.class);
-                break;
-            case 3:
-                transferService = context.getBean("yamlDataTransferService", DataTransferService.class);
-                break;
-            default:
-                System.out.println("Неверный выбор, используем JSON по умолчанию.");
-                transferService = context.getBean("jsonDataTransferService", DataTransferService.class);
+
+            case 1 -> transferService =
+                    context.getBean("jsonDataTransferService", DataTransferService.class);
+
+            case 2 -> transferService =
+                    context.getBean("csvDataTransferService", DataTransferService.class);
+
+            case 3 -> transferService =
+                    context.getBean("yamlDataTransferService", DataTransferService.class);
+
+            default -> transferService =
+                    context.getBean("jsonDataTransferService", DataTransferService.class);
         }
 
-        String filePath = switch (choice) {
+        String file = switch (choice) {
+
             case 1 -> "finance-data.json";
             case 2 -> "finance-data.csv";
             case 3 -> "finance-data.yaml";
             default -> "finance-data.json";
         };
 
-        // Экспорт данных
         transferService.exportData(
                 List.of(account),
-                List.of(
-                        new Operation(OperationType.INCOME, account.getId(), salary.getId(), BigDecimal.valueOf(100_000), LocalDate.now(), "Зарплата"),
-                        new Operation(OperationType.EXPENSE, account.getId(), cafe.getId(), BigDecimal.valueOf(2_500), LocalDate.now(), "Кофе")
-                ),
-                filePath
+                List.of(),
+                file
         );
 
-        System.out.println("Данные экспортированы в " + filePath);
+        System.out.println("Экспортировано в " + file);
 
-        // Импорт данных (демонстрация)
-        ImportResult imported = transferService.importData(filePath);
-        System.out.println("Импортированные счета: " + imported.accounts().size());
-        System.out.println("Импортированные операции: " + imported.operations().size());
+        ImportResult result = transferService.importData(file);
+
+        System.out.println("Импортировано счетов: " + result.accounts().size());
+        System.out.println("Импортировано операций: " + result.operations().size());
     }
 }
