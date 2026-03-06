@@ -1,0 +1,48 @@
+finance-accounting
+└── src
+    ├── main
+    │   └── java
+    │       └── ru.tigrbank.finance
+    │
+    │           ├── domain
+    │           │   ├── entity
+    │           │   │   ├── BankAccount.java
+    │           │   │   ├── Category.java
+    │           │   │   └── Operation.java
+    │           │   │
+    │           │   ├── enums
+    │           │   │   └── OperationType.java
+    │           │   │
+    │           │   └── repository
+    │           │       └── Repository.java
+    │
+    │           ├── application
+    │           │   ├── interfaces
+    │           │   │   ├── OperationService.java
+    │           │   │   ├── AnalyticsService.java
+    │           │   │   ├── DataTransferService.java
+    │           │   │   └── ImportResult.java
+    │           │   │
+    │           │   └── service
+    │           │       ├── OperationServiceImpl.java
+    │           │       └── AnalyticsServiceImpl.java
+    │
+    │           ├── infrastructure
+    │           │   ├── repository
+    │           │   │   └── InMemoryRepository.java
+    │           │   │
+    │           │   └── file
+    │           │       ├── JsonDataTransferService.java
+    │           │       ├── CsvDataTransferService.java
+    │           │       └── YamlDataTransferService.java
+    │
+    │           ├── config
+    │           │   └── AppConfig.java
+    │
+    │           └── console
+    │               └── ConsoleApplication.java
+    │
+    └── test
+        └── java
+            └── ru.tigrbank.finance
+                └── AnalyticsServiceTest.java
