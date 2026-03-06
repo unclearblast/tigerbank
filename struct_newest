@@ -1,0 +1,58 @@
+src/main/java/ru/tigrbank/finance
+
+config
+    AppConfig.java
+
+domain
+    BankAccount.java
+    Category.java
+    Operation.java
+    OperationType.java
+
+factory
+    BankAccountFactory.java
+    CategoryFactory.java
+    OperationFactory.java
+
+repository
+    BankAccountRepository.java
+    CategoryRepository.java
+    OperationRepository.java
+
+repository/impl
+    InMemoryBankAccountRepository.java
+    InMemoryCategoryRepository.java
+    InMemoryOperationRepository.java
+
+facade
+    BankAccountFacade.java
+    CategoryFacade.java
+    OperationFacade.java
+    AnalyticsFacade.java
+
+analytics
+    AnalyticsService.java
+
+command
+    Command.java
+    CommandInvoker.java
+    CreateAccountCommand.java
+    CreateOperationCommand.java
+
+importer
+    AbstractDataImporter.java
+    JsonDataImporter.java
+    CsvDataImporter.java
+    YamlDataImporter.java
+
+exporter
+    DataExporter.java
+    JsonExporter.java
+    CsvExporter.java
+    YamlExporter.java
+
+dto
+    DataBundle.java
+
+console
+    ConsoleApplication.java
